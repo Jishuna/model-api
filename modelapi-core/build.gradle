@@ -1,0 +1,20 @@
+plugins {
+	id 'java'
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://repo.codemc.io/repository/maven-snapshots/' }
+    mavenLocal()
+}
+
+dependencies {
+	compileOnly('org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT')
+    implementation("team.unnamed:creative-api:0.5.4-SNAPSHOT")
+    implementation("team.unnamed:creative-server:0.5.4-SNAPSHOT")
+}

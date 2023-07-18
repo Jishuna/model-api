@@ -1,0 +1,48 @@
+plugins {
+	id 'eclipse'
+	id 'java'
+    id 'maven-publish'
+	id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+group 'me.jishuna'
+
+jar.enabled = false
+
+repositories {
+	mavenCentral()
+	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+	maven { url = 'https://repo.codemc.io/repository/maven-snapshots/' }
+	mavenLocal()
+}
+
+dependencies {
+     implementation project(':modelapi-core')
+     implementation project(path: ':modelapi-v1_20_R1', configuration: 'reobf')
+}
+
+shadowJar {
+   	archiveClassifier.set('')
+   	archiveVersion.set('')
+}
+
+build {
+    dependsOn shadowJar
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            repositories {
+                maven {
+                    credentials {
+                        username = 'josh'
+                        password = System.getenv("Secret")
+                    }
+                    url = 'https://repo.epicebic.xyz/public/'
+                }
+            }
+        }
+    }
+}
