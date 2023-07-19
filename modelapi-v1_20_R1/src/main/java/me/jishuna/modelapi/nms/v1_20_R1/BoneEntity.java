@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
+import team.unnamed.creative.base.Vector3Float;
 
 public class BoneEntity extends ItemDisplay implements BoneView {
     private final MinecraftModelEntity parent;
@@ -78,24 +79,27 @@ public class BoneEntity extends ItemDisplay implements BoneView {
         boolean success = super.startRiding(entity, force);
 
         if (success) {
-            setPosition(new Vector3f());
+            setPosition(Vector3Float.ZERO);
         }
         return success;
     }
 
     @Override
-    public void setPosition(Vector3f position) {
+    public void setPosition(Vector3Float position) {
         Vec3 root = this.parent.position();
         super.setPos(root.x, root.y, root.z);
     }
 
     @Override
-    public void setRotation(Vector3f rotation) {
+    public void setRotation(Vector3Float rotation) {
         Quaternion quat = Quaternion.fromEuler(rotation);
         Quaternionf rotationQ = new Quaternionf(quat.x, quat.y, quat.z, quat.w);
         Transformation current = Display.createTransformation(super.getEntityData());
 
-        Transformation traansformation = new Transformation(current.getTranslation(), rotationQ, current.getScale(), rotationQ);
+        Vector3f translation = bone.positionJOML();
+        translation.rotate(rotationQ);
+
+        Transformation traansformation = new Transformation(translation, rotationQ, current.getScale(), current.getRightRotation());
         super.setTransformation(traansformation);
     }
 

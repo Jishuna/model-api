@@ -3,12 +3,11 @@ package me.jishuna.modelapi.nms.v1_20_R1;
 import java.util.Map;
 import java.util.Objects;
 
-import org.joml.Vector3f;
-
 import com.google.common.collect.ImmutableMap;
 
 import me.jishuna.modelapi.Bone;
 import me.jishuna.modelapi.Model;
+import me.jishuna.modelapi.animation.AnimationController;
 import net.minecraft.server.level.ChunkMap.TrackedEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -25,27 +24,34 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import team.unnamed.creative.base.Vector3Float;
 
 public class MinecraftModelEntity extends PathfinderMob {
     private final Model model;
     private final ImmutableMap<String, BoneEntity> bones;
+    private final AnimationController animationController;
     private final CraftModelEntity bukkitEntity;
     private final ModelEntityTracker tracker;
     private AttributeMap attributes;
 
     public float lastBodyRotation;
-    
+
     float rotate = 0;
+
+    int frame = 0;
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world, Model model) {
         super(type, world);
         this.model = model;
         this.bukkitEntity = new CraftModelEntity(super.level().getCraftServer(), this);
+        this.animationController = AnimationController.create(bukkitEntity);
 
         this.bones = instantiateBones();
         this.tracker = new ModelEntityTracker(this);
 
         setPos(0.0, 0.0, 0.0);
+
+        this.animationController.queue(this.model.animations().get("walk"));
     }
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world) {
@@ -56,13 +62,13 @@ public class MinecraftModelEntity extends PathfinderMob {
         ImmutableMap.Builder<String, BoneEntity> bones = ImmutableMap.builder();
 
         for (Bone bone : model.bones().values()) {
-            instantiateBone(bone, new Vector3f(), bones, 0);
+            instantiateBone(bone, Vector3Float.ZERO, bones, 0);
         }
         return bones.build();
     }
 
-    private void instantiateBone(Bone bone, Vector3f parentPosition, ImmutableMap.Builder<String, BoneEntity> into, int index) {
-        Vector3f position = bone.positionJOML().add(parentPosition);
+    private void instantiateBone(Bone bone, Vector3Float parentPosition, ImmutableMap.Builder<String, BoneEntity> into, int index) {
+        Vector3Float position = bone.position().add(parentPosition);
         BoneEntity entity = new BoneEntity(this, bone, index++);
         entity.setPosition(position);
         System.out.println("Entity pos: " + entity.position());
@@ -101,16 +107,10 @@ public class MinecraftModelEntity extends PathfinderMob {
         }
 
         tracker.tick(tracked.seenBy);
-        testRotate();
-        super.tick();
-    }
-
-    public void testRotate() {
-        rotate = (rotate + 1) % 180;
-        Vector3f vector = new Vector3f(rotate, 0, 0);
-        for (BoneEntity entity : this.bones.values()) {
-            entity.setRotation(vector);
+        if (frame++ % 10 == 0) {
+            this.animationController.tick(Math.toRadians(super.getYRot()));
         }
+        super.tick();
     }
 
     @Override
@@ -123,6 +123,14 @@ public class MinecraftModelEntity extends PathfinderMob {
                 entity.setYRot(yaw);
             }
         }
+    }
+
+    public AnimationController animationController() {
+        return animationController;
+    }
+
+    public Model model() {
+        return model;
     }
 
     @Override

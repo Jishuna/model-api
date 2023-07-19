@@ -6,7 +6,9 @@ import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftMob;
 import org.bukkit.entity.EntityType;
 
+import me.jishuna.modelapi.Model;
 import me.jishuna.modelapi.ModelEntity;
+import me.jishuna.modelapi.animation.AnimationController;
 import me.jishuna.modelapi.view.BoneView;
 
 public class CraftModelEntity extends CraftMob implements ModelEntity {
@@ -33,6 +35,20 @@ public class CraftModelEntity extends CraftMob implements ModelEntity {
     @Override
     public BoneView getBone(String name) {
         return getHandle().getBones().get(name);
+    }
+
+    @Override
+    public Model model() {
+        return getHandle().model();
+    }
+
+    @Override
+    public AnimationController animationController() {
+        return getHandle().animationController();
+    }
+
+    @Override
+    public void tickAnimations() {
     }
 
 }

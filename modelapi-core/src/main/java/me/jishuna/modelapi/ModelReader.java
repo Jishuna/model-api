@@ -19,6 +19,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import me.jishuna.modelapi.animation.Animation;
 import team.unnamed.creative.base.Axis3D;
 import team.unnamed.creative.base.CubeFace;
 import team.unnamed.creative.base.Vector3Float;
@@ -52,6 +53,7 @@ public class ModelReader {
         int textureHeight = resolution.get("height").getAsInt();
 
         Map<String, Bone> bones = new LinkedHashMap<>();
+        Map<String, Animation> animations = new LinkedHashMap<>();
         Map<String, Writable> textures = new HashMap<>();
         Map<Integer, String> textureMapping = new HashMap<>();
         Map<String, BoneAsset> boneAssets = new LinkedHashMap<>();
@@ -59,8 +61,9 @@ public class ModelReader {
         try {
             readTextures(json, textures, textureMapping);
             readElementArray(json, bones, boneAssets, textureWidth, textureHeight);
+            AnimationReader.readAnimations(json, animations);
 
-            return new Model(name, bones, new ModelAsset(name, textures, textureMapping, boneAssets));
+            return new Model(name, bones, new ModelAsset(name, textures, textureMapping, boneAssets), animations);
         } catch (IOException e) {
             e.printStackTrace();
             return null;

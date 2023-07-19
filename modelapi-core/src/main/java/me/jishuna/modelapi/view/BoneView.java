@@ -1,8 +1,9 @@
 package me.jishuna.modelapi.view;
 
-import org.joml.Vector3f;
-import me.jishuna.modelapi.Bone;
 import org.bukkit.Color;
+
+import me.jishuna.modelapi.Bone;
+import team.unnamed.creative.base.Vector3Float;
 
 public interface BoneView {
     int DEFAULT_COLOR = 0xFFFFFF;
@@ -23,7 +24,7 @@ public interface BoneView {
         color(DEFAULT_COLOR);
     }
 
-    void setPosition(Vector3f position);
+    void setPosition(Vector3Float position);
 
-    void setRotation(Vector3f rotation);
+    void setRotation(Vector3Float rotation);
 }

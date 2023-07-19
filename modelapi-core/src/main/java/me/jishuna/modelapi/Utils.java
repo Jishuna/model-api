@@ -32,4 +32,8 @@ public class Utils {
             ex.printStackTrace();
         }
     }
+
+    public static float parseLenientFloat(JsonElement element) {
+        return element.getAsJsonPrimitive().isString() ? Float.parseFloat(element.getAsString().replace(',', '.')) : element.getAsFloat();
+    }
 }
