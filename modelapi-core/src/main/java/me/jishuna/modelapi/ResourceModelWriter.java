@@ -23,8 +23,18 @@
  */
 package me.jishuna.modelapi;
 
-import net.kyori.adventure.key.Key;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.intellij.lang.annotations.Subst;
+
+import net.kyori.adventure.key.Key;
 import team.unnamed.creative.base.Vector3Float;
 import team.unnamed.creative.base.Writable;
 import team.unnamed.creative.file.FileTree;
@@ -34,15 +44,6 @@ import team.unnamed.creative.model.ItemPredicate;
 import team.unnamed.creative.model.ItemTransform;
 import team.unnamed.creative.model.ModelTexture;
 import team.unnamed.creative.texture.Texture;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ModelWriter} that writes {@link Model} instances to
@@ -54,8 +55,6 @@ final class ResourceModelWriter implements ModelWriter<FileTree> {
 
     private static final Key LEATHER_HORSE_ARMOR_KEY = Key.key("item/leather_horse_armor");
     private static final String DEFAULT_NAMESPACE = "hephaestus";
-
-    private static final Vector3Float SCALE = new Vector3Float(ItemTransform.MAX_SCALE, ItemTransform.MAX_SCALE, ItemTransform.MAX_SCALE);
 
     public static final float DISPLAY_TRANSLATION_Y = -6.4f;
 
@@ -136,7 +135,7 @@ final class ResourceModelWriter implements ModelWriter<FileTree> {
         Vector3Float offset = bone.offset();
 
         Map<ItemTransform.Type, ItemTransform> displays = new HashMap<>();
-        displays.put(ItemTransform.Type.HEAD, ItemTransform.builder().translation(new Vector3Float(offset.x(), offset.y(), offset.z())).scale(Vector3Float.ONE).build());
+        displays.put(ItemTransform.Type.HEAD, ItemTransform.builder().translation(new Vector3Float(0, 8, 0)).scale(Vector3Float.ONE).build());
 
         Map<String, Key> textureMappings = new HashMap<>();
         model.textureMapping().forEach((id, texturePath) -> {

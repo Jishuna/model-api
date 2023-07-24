@@ -8,13 +8,13 @@ import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import com.mojang.math.Transformation;
 
 import me.jishuna.modelapi.Bone;
 import me.jishuna.modelapi.Quaternion;
 import me.jishuna.modelapi.view.BoneView;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -28,6 +28,8 @@ import net.minecraft.world.phys.Vec3;
 import team.unnamed.creative.base.Vector3Float;
 
 public class BoneEntity extends ItemDisplay implements BoneView {
+    private static final Color[] COLORS = new Color[] { Color.fromRGB(0, 0, 0), Color.fromRGB(255, 255, 255), Color.fromRGB(255, 0, 0), Color.fromRGB(0, 255, 0), Color.fromRGB(0, 0, 255), Color.fromRGB(255, 255, 0), Color.fromRGB(255, 0, 255) };
+
     private final MinecraftModelEntity parent;
     private final Bone bone;
 
@@ -46,16 +48,19 @@ public class BoneEntity extends ItemDisplay implements BoneView {
         ItemStack item = new ItemStack(Material.LEATHER_HORSE_ARMOR);
         LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
 
-        meta.setColor(Color.WHITE);
+        meta.setColor(COLORS[index]);
         meta.setCustomModelData(this.bone.customModelData());
         item.setItemMeta(meta);
 
         setItemStack(CraftItemStack.asNMSCopy(item));
 
-        super.setItemTransform(ItemDisplayContext.HEAD);
+        setCustomName(Component.literal(this.bone.name()));
+        setCustomNameVisible(true);
 
-        Transformation traansformation = new Transformation(this.bone.positionJOML(), new Quaternionf(), new Vector3f(1, 1, 1), new Quaternionf());
-        super.setTransformation(traansformation);
+         super.setItemTransform(ItemDisplayContext.HEAD);
+
+//        Transformation traansformation = new Transformation(this.bone.positionJOML(), new Quaternionf(), new Vector3f(1, 1, 1), new Quaternionf());
+//        super.setTransformation(traansformation);
     }
 
     void show(Consumer<Packet<ClientGamePacketListener>> sender) {
@@ -87,7 +92,7 @@ public class BoneEntity extends ItemDisplay implements BoneView {
     @Override
     public void setPosition(Vector3Float position) {
         Vec3 root = this.parent.position();
-        super.setPos(root.x, root.y, root.z);
+        super.setPos(root.x + position.x(), root.y + position.y(), root.z + position.z());
     }
 
     @Override
@@ -96,11 +101,7 @@ public class BoneEntity extends ItemDisplay implements BoneView {
         Quaternionf rotationQ = new Quaternionf(quat.x, quat.y, quat.z, quat.w);
         Transformation current = Display.createTransformation(super.getEntityData());
 
-        Vector3f translation = bone.positionJOML();
-        translation.rotate(rotationQ);
-
-        Transformation traansformation = new Transformation(translation, rotationQ, current.getScale(), current.getRightRotation());
+        Transformation traansformation = new Transformation(current.getTranslation(), rotationQ, current.getScale(), current.getRightRotation());
         super.setTransformation(traansformation);
     }
-
 }

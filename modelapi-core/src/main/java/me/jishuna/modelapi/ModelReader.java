@@ -143,7 +143,7 @@ public class ModelReader {
     private void createBone(Vector3Float parentPosition, Map<String, Cube> cubeMap, JsonObject json, Map<String, Bone> siblings, Map<String, BoneAsset> siblingAssets) {
         String name = json.get("name").getAsString();
 
-        Vector3Float unitAbsolutePosition = Utils.readAsVector(json.get("origin"));
+        Vector3Float unitAbsolutePosition = Utils.readAsVector(json.get("origin")).multiply(-1, 1, -1);
         Vector3Float rotation = Utils.isValid(json, "rotation") ? Utils.readAsVector(json.get("rotation")) : Vector3Float.ZERO;
 
         Vector3Float absolutePosition = unitAbsolutePosition.divide(16f, 16f, 16f);
@@ -168,8 +168,9 @@ public class ModelReader {
                 }
             }
         }
-        BoneAsset asset = new BoneAsset(name, unitAbsolutePosition, MODEL_DATA++, Vector3Float.ZERO, test(cubes, unitAbsolutePosition.multiply(1, -1, 1)), false, childrenAssets);
+        BoneAsset asset = new BoneAsset(name, unitAbsolutePosition, MODEL_DATA++, Vector3Float.ZERO, test(cubes, unitAbsolutePosition), false, childrenAssets);
 
+        System.out.println("Position: " + position);
         siblings.put(name, new Bone(name, position, rotation, children, asset.customModelData()));
         siblingAssets.put(name, asset);
     }
@@ -182,10 +183,10 @@ public class ModelReader {
 
             ElementRotation rotation = cube.rotation();
             Vector3Float rotationOrigin = rotation.origin();
-            rotationOrigin = rotationOrigin.add(8 + unitAbsolutePosition.x(), unitAbsolutePosition.y(), 8 + unitAbsolutePosition.z());
+            rotationOrigin = rotationOrigin.add(8 + unitAbsolutePosition.x(), 0, 8 + unitAbsolutePosition.z());
 
-            from = from.add(8 + unitAbsolutePosition.x(), unitAbsolutePosition.y(), 8 + unitAbsolutePosition.z());
-            to = to.add(8 + unitAbsolutePosition.x(), unitAbsolutePosition.y(), 8 + unitAbsolutePosition.z());
+            from = from.add(8 + unitAbsolutePosition.x(), 0, 8 + unitAbsolutePosition.z());
+            to = to.add(8 + unitAbsolutePosition.x(), 0, 8 + unitAbsolutePosition.z());
 
             Cube newCube = new Cube(from, to, rotation.origin(rotationOrigin), cube.faces());
             newCubes.add(newCube);

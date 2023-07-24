@@ -57,7 +57,7 @@ final class AnimationReader {
 
             String name = animationJson.get("name").getAsString();
             Animation.LoopMode loopMode = getLoopMode(animationJson);
-            int length = Math.round(Utils.parseLenientFloat(animationJson.get("length")) * TICKS_PER_SECOND);
+           // int length = Math.round(Utils.parseLenientFloat(animationJson.get("length")) * TICKS_PER_SECOND);
 
             if (!Utils.isValid(animationJson, "animators")) {
                 // empty animation, no keyframes of any kind
@@ -94,7 +94,7 @@ final class AnimationReader {
                     }
 
                     if (channel.equals("position")) {
-                        value = value.divide(16, 16, -16);
+                        value = value.divide(16, 16, 16);
                     }
 
                     frames.put(time, Timeline.Channel.valueOf(channel.toUpperCase()), value);

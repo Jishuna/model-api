@@ -7,22 +7,14 @@ import com.google.common.collect.ImmutableMap;
 
 import me.jishuna.modelapi.Bone;
 import me.jishuna.modelapi.Model;
+import me.jishuna.modelapi.Vectors;
 import me.jishuna.modelapi.animation.AnimationController;
 import net.minecraft.server.level.ChunkMap.TrackedEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import team.unnamed.creative.base.Vector3Float;
 
@@ -37,11 +29,14 @@ public class MinecraftModelEntity extends PathfinderMob {
     public float lastBodyRotation;
 
     float rotate = 0;
-
     int frame = 0;
+    
+    int index;
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world, Model model) {
         super(type, world);
+        this.setNoGravity(true);
+
         this.model = model;
         this.bukkitEntity = new CraftModelEntity(super.level().getCraftServer(), this);
         this.animationController = AnimationController.create(bukkitEntity);
@@ -51,7 +46,7 @@ public class MinecraftModelEntity extends PathfinderMob {
 
         setPos(0.0, 0.0, 0.0);
 
-        this.animationController.queue(this.model.animations().get("walk"));
+        this.animationController.queue(this.model.animations().get("test"));
     }
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world) {
@@ -62,31 +57,30 @@ public class MinecraftModelEntity extends PathfinderMob {
         ImmutableMap.Builder<String, BoneEntity> bones = ImmutableMap.builder();
 
         for (Bone bone : model.bones().values()) {
-            instantiateBone(bone, Vector3Float.ZERO, bones, 0);
+            instantiateBone(bone, Vector3Float.ZERO, bones);
         }
         return bones.build();
     }
 
-    private void instantiateBone(Bone bone, Vector3Float parentPosition, ImmutableMap.Builder<String, BoneEntity> into, int index) {
+    private void instantiateBone(Bone bone, Vector3Float parentPosition, ImmutableMap.Builder<String, BoneEntity> into) {
         Vector3Float position = bone.position().add(parentPosition);
         BoneEntity entity = new BoneEntity(this, bone, index++);
         entity.setPosition(position);
-        System.out.println("Entity pos: " + entity.position());
         into.put(bone.name(), entity);
 
         for (Bone child : bone.children().values()) {
-            instantiateBone(child, position, into, index);
+            instantiateBone(child, position, into);
         }
     }
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new PanicGoal(this, 2.0D));
-        this.goalSelector.addGoal(2, new TemptGoal(this, 1.25D, Ingredient.of(Items.EMERALD), false));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+//        this.goalSelector.addGoal(0, new FloatGoal(this));
+//        this.goalSelector.addGoal(1, new PanicGoal(this, 2.0D));
+//        this.goalSelector.addGoal(2, new TemptGoal(this, 1.25D, Ingredient.of(Items.EMERALD), false));
+//        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+//        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
+//        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
     }
 
     @Override
@@ -97,6 +91,7 @@ public class MinecraftModelEntity extends PathfinderMob {
         return this.attributes;
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void tick() {
         ServerLevel level = ((ServerLevel) this.level());
@@ -114,14 +109,37 @@ public class MinecraftModelEntity extends PathfinderMob {
     }
 
     @Override
-    public void setYRot(float yaw) {
-        super.setYRot(yaw);
-        if (model != null) {
-            for (var bone : model.bones().values()) {
-                var entity = bones.get(bone.name());
-                Objects.requireNonNull(entity, "Unknown bone");
-                entity.setYRot(yaw);
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+
+        if (model != null) { // model is null when setPos is called by the Entity constructor
+            for (Bone bone : model.bones().values()) {
+                teleportBoneAndChildren(0, bone, Vector3Float.ZERO);
             }
+        }
+    }
+
+    @Override
+    public void setYRot(float yaw) {
+        if (model != null) {
+            double radians = Math.toRadians(yaw);
+            for (var bone : model.bones().values()) {
+                teleportBoneAndChildren(radians, bone, Vector3Float.ZERO);
+            }
+        }
+    }
+
+    private void teleportBoneAndChildren(double yawRadians, Bone bone, Vector3Float parentPosition) {
+        // location computing
+        var position = bone.position().add(parentPosition);
+        var rotatedPosition = Vectors.rotateAroundY(position, yawRadians);
+
+        var entity = bones.get(bone.name());
+        Objects.requireNonNull(entity, "Unknown bone");
+        entity.setPosition(rotatedPosition);
+
+        for (var child : bone.children().values()) {
+            teleportBoneAndChildren(yawRadians, child, position);
         }
     }
 

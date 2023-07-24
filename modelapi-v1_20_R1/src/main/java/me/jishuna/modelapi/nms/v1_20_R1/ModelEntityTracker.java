@@ -7,17 +7,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Particle;
+
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
+import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.phys.Vec3;
 
 public class ModelEntityTracker {
     private final Set<ServerPlayer> tracking = new HashSet<>();
@@ -38,7 +42,39 @@ public class ModelEntityTracker {
         for (BoneEntity bone : entity.getBones().values()) {
             sendDirtyEntityData(bone);
 
-            if (this.entity.yBodyRot != this.entity.lastBodyRotation) {
+            bone.getBukkitEntity().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, bone.getX(), bone.getY(), bone.getZ(), 1);
+
+            Vec3 position = bone.position();
+            long x = bone.getPositionCodec().encodeX(position);
+            long y = bone.getPositionCodec().encodeY(position);
+            long z = bone.getPositionCodec().encodeZ(position);
+
+            boolean move = x != 0 || y != 0 || z != 0;
+            boolean rotate = this.entity.yBodyRot != this.entity.lastBodyRotation;
+
+            if (move && rotate) {
+                byte yaw = (byte) Mth.floor(this.entity.yBodyRot * 256.0F / 360.0F);
+                boolean big = x < Short.MIN_VALUE || x > Short.MAX_VALUE || y < Short.MIN_VALUE || y > Short.MAX_VALUE || z < Short.MIN_VALUE || z > Short.MAX_VALUE;
+
+                if (big) {
+                    sendToAll(new ClientboundTeleportEntityPacket(bone));
+                    sendToAll(new ClientboundMoveEntityPacket.Rot(bone.getId(), yaw, (byte) 0, bone.onGround));
+                } else {
+                    sendToAll(new ClientboundMoveEntityPacket.PosRot(bone.getId(), (short) x, (short) y, (short) z, yaw, (byte) 0, entity.onGround()));
+                }
+
+                bone.getPositionCodec().setBase(position);
+            } else if (move) {
+                boolean big = x < Short.MIN_VALUE || x > Short.MAX_VALUE || y < Short.MIN_VALUE || y > Short.MAX_VALUE || z < Short.MIN_VALUE || z > Short.MAX_VALUE;
+
+                if (big) {
+                    sendToAll(new ClientboundTeleportEntityPacket(bone));
+                } else {
+                    sendToAll(new ClientboundMoveEntityPacket.Pos(bone.getId(), (short) x, (short) y, (short) z, entity.onGround()));
+                }
+
+                bone.getPositionCodec().setBase(position);
+            } else if (rotate) {
                 byte yaw = (byte) Mth.floor(this.entity.yBodyRot * 256.0F / 360.0F);
                 sendToAll(new ClientboundMoveEntityPacket.Rot(bone.getId(), yaw, (byte) 0, bone.onGround));
             }
@@ -77,11 +113,11 @@ public class ModelEntityTracker {
         List<Packet<ClientGamePacketListener>> list = new ArrayList<>();
 
         for (BoneEntity bone : entity.getBones().values()) {
-            bone.startRiding(this.entity, true);
+            // bone.startRiding(this.entity, true);
             bone.show(list::add);
         }
 
-        list.add(new ClientboundSetPassengersPacket(this.entity));
+        // list.add(new ClientboundSetPassengersPacket(this.entity));
         player.connection.send(new ClientboundBundlePacket(list));
     }
 
