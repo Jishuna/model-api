@@ -132,10 +132,8 @@ final class ResourceModelWriter implements ModelWriter<FileTree> {
      * @param bone  The bone to be converted
      */
     private team.unnamed.creative.model.Model toCreative(Key key, ModelAsset model, BoneAsset bone) {
-        Vector3Float offset = bone.offset();
-
         Map<ItemTransform.Type, ItemTransform> displays = new HashMap<>();
-        displays.put(ItemTransform.Type.HEAD, ItemTransform.builder().translation(new Vector3Float(0, 8, 0)).scale(Vector3Float.ONE).build());
+        displays.put(ItemTransform.Type.HEAD, ItemTransform.builder().translation(new Vector3Float(0, 7, 0)).scale(Vector3Float.ONE).build());
 
         Map<String, Key> textureMappings = new HashMap<>();
         model.textureMapping().forEach((id, texturePath) -> {

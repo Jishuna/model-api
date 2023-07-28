@@ -30,7 +30,7 @@ public class MinecraftModelEntity extends PathfinderMob {
 
     float rotate = 0;
     int frame = 0;
-    
+
     int index;
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world, Model model) {
@@ -46,7 +46,7 @@ public class MinecraftModelEntity extends PathfinderMob {
 
         setPos(0.0, 0.0, 0.0);
 
-        this.animationController.queue(this.model.animations().get("test"));
+        this.animationController.queue(this.model.animations().get("walk"));
     }
 
     public MinecraftModelEntity(EntityType<? extends PathfinderMob> type, Level world) {
@@ -63,7 +63,7 @@ public class MinecraftModelEntity extends PathfinderMob {
     }
 
     private void instantiateBone(Bone bone, Vector3Float parentPosition, ImmutableMap.Builder<String, BoneEntity> into) {
-        Vector3Float position = bone.position().add(parentPosition);
+        Vector3Float position = bone.position();// .add(parentPosition);
         BoneEntity entity = new BoneEntity(this, bone, index++);
         entity.setPosition(position);
         into.put(bone.name(), entity);
@@ -102,9 +102,9 @@ public class MinecraftModelEntity extends PathfinderMob {
         }
 
         tracker.tick(tracked.seenBy);
-        if (frame++ % 10 == 0) {
-            this.animationController.tick(Math.toRadians(super.getYRot()));
-        }
+        // if (frame++ % 10 == 0) {
+        this.animationController.tick(Math.toRadians(super.getYRot()));
+        // }
         super.tick();
     }
 
@@ -131,7 +131,7 @@ public class MinecraftModelEntity extends PathfinderMob {
 
     private void teleportBoneAndChildren(double yawRadians, Bone bone, Vector3Float parentPosition) {
         // location computing
-        var position = bone.position().add(parentPosition);
+        var position = bone.position();// .add(parentPosition);
         var rotatedPosition = Vectors.rotateAroundY(position, yawRadians);
 
         var entity = bones.get(bone.name());

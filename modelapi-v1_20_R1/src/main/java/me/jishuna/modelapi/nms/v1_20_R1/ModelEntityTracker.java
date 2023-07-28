@@ -20,7 +20,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Display;
 import net.minecraft.world.phys.Vec3;
 
 public class ModelEntityTracker {
@@ -42,7 +41,7 @@ public class ModelEntityTracker {
         for (BoneEntity bone : entity.getBones().values()) {
             sendDirtyEntityData(bone);
 
-            bone.getBukkitEntity().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, bone.getX(), bone.getY(), bone.getZ(), 1);
+            bone.getBukkitEntity().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, bone.getX(), bone.getY(), bone.getZ(), 1, 0, 0, 0, 0);
 
             Vec3 position = bone.position();
             long x = bone.getPositionCodec().encodeX(position);

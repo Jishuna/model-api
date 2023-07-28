@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import team.unnamed.creative.base.Vector3Float;
 
 public class BoneEntity extends ItemDisplay implements BoneView {
-    private static final Color[] COLORS = new Color[] { Color.fromRGB(0, 0, 0), Color.fromRGB(255, 255, 255), Color.fromRGB(255, 0, 0), Color.fromRGB(0, 255, 0), Color.fromRGB(0, 0, 255), Color.fromRGB(255, 255, 0), Color.fromRGB(255, 0, 255) };
+    private static final Color[] COLORS = new Color[] { Color.fromRGB(0, 0, 0), Color.fromRGB(255, 255, 255), Color.fromRGB(255, 0, 0), Color.fromRGB(0, 255, 0), Color.fromRGB(0, 0, 255), Color.fromRGB(255, 255, 0), Color.fromRGB(255, 0, 255), Color.fromRGB(0, 255, 255) };
 
     private final MinecraftModelEntity parent;
     private final Bone bone;
@@ -48,7 +48,7 @@ public class BoneEntity extends ItemDisplay implements BoneView {
         ItemStack item = new ItemStack(Material.LEATHER_HORSE_ARMOR);
         LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
 
-        meta.setColor(COLORS[index]);
+        meta.setColor(Color.WHITE);
         meta.setCustomModelData(this.bone.customModelData());
         item.setItemMeta(meta);
 
@@ -57,7 +57,7 @@ public class BoneEntity extends ItemDisplay implements BoneView {
         setCustomName(Component.literal(this.bone.name()));
         setCustomNameVisible(true);
 
-         super.setItemTransform(ItemDisplayContext.HEAD);
+        super.setItemTransform(ItemDisplayContext.HEAD);
 
 //        Transformation traansformation = new Transformation(this.bone.positionJOML(), new Quaternionf(), new Vector3f(1, 1, 1), new Quaternionf());
 //        super.setTransformation(traansformation);
